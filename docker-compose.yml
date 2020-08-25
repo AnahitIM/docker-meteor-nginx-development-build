@@ -1,0 +1,39 @@
+version: '3.7'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mongo
+    environment:
+      ROOT_URL: ${APP_ROOT_URL:-http://localhost}
+      MONGO_URL: mongodb://mongo:27017/meteor
+      PORT: 3000
+    volumes:
+      - static:/opt/bundle/
+
+  mongo:
+    image: mongo:latest
+    command:
+      - --storageEngine=wiredTiger
+    volumes:
+      - data:/data/db
+    
+  nginx:
+    container_name: nginx
+    build: ./nginx/
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - static:/opt/bundle/
+    depends_on:
+      - app
+
+volumes:
+  static:
+  data:
